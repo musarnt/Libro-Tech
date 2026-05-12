@@ -2,11 +2,11 @@ package com.riwi.librotech.controller;
 
 import com.riwi.librotech.model.Category;
 import com.riwi.librotech.service.CategoryService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -14,7 +14,6 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @Autowired
     public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
@@ -25,10 +24,11 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getCategory(@PathVariable Long id) {
+    public ResponseEntity<?> getCategory(@PathVariable Long id) {
         return categoryService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(404)
+                        .body(Map.of("error", "Category not found", "id", id)));
     }
 
     @PostMapping
@@ -37,16 +37,35 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> updateCategory(@PathVariable Long id, @RequestBody Category updated) {
+    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody Category updated) {
         return categoryService.update(id, updated)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(404)
+                        .body(Map.of("error", "Category not found", "id", id)));
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> patchCategory(@PathVariable Long id, @RequestBody Map<String, Object> fields) {
+        return categoryService.findById(id).map(category -> {
+                    if (fields.containsKey("name")) category.setName((String) fields.get("name"));
+                    if (fields.containsKey("description")) category.setDescription((String) fields.get("description"));
+                    return ResponseEntity.ok(categoryService.save(category));
+                }).<ResponseEntity<?>>map(r -> r)
+                .orElse(ResponseEntity.status(404)
+                        .body(Map.of("error", "Category not found", "id", id)));
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.HEAD)
+    public ResponseEntity<Void> headCategory(@PathVariable Long id) {
+        return categoryService.findById(id).isPresent()
+                ? ResponseEntity.ok().build()
+                : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteCategory(@PathVariable Long id) {
-        return categoryService.deleteById(id)
-                ? ResponseEntity.ok("Category deleted")
-                : ResponseEntity.notFound().build();
+    public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
+        if (categoryService.deleteById(id)) return ResponseEntity.noContent().build();
+        return ResponseEntity.status(404)
+                .body(Map.of("error", "Category not found", "id", id));
     }
 }
