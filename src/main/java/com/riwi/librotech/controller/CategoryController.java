@@ -4,6 +4,10 @@ import com.riwi.librotech.model.Category;
 import com.riwi.librotech.service.CategoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Map;
@@ -19,8 +23,9 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Category>> getCategories() {
-        return ResponseEntity.ok(categoryService.findAll());
+    public ResponseEntity<Page<Category>> getCategories(
+            @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(categoryService.findAll(pageable));
     }
 
     @GetMapping("/{id}")
