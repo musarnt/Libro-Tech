@@ -27,8 +27,12 @@ public class BookService {
     }
 
     public Book save(Book book) {
+        book.setId(null); // ignore any id sent in the body, always insert
         if (book.getTitle() == null || book.getTitle().isBlank()) {
             throw new IllegalArgumentException("Title cannot be empty");
+        }
+        if (bookRepository.existsByIsbn(book.getIsbn())) {
+            throw new IllegalArgumentException("Book with this ISBN already exists");
         }
         return bookRepository.save(book);
     }

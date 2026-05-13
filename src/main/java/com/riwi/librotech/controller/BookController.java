@@ -2,14 +2,13 @@ package com.riwi.librotech.controller;
 
 import com.riwi.librotech.model.Book;
 import com.riwi.librotech.service.BookService;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-import org.springframework.data.domain.Sort;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController

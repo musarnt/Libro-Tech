@@ -10,4 +10,5 @@ import java.util.List;
 public interface BookRepository extends JpaRepository<Book, Long> {
     // Spring genera el SQL automáticamente por el nombre del método
     List<Book> findByAuthor(String author);
+    boolean existsByIsbn(String isbn);
 }
