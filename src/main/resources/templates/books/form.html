@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${screenTitle}">Book Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { padding: 8px; width: 300px; }
+        button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        .btn-cancel { background-color: #f44336; text-decoration: none; display: inline-block; padding: 10px 15px; color: white; }
+    </style>
+</head>
+<body>
+
+<!-- Activity 2: Inject navbar -->
+<div th:replace="~{layout/components :: navbar}"></div>
+
+<div style="margin: 20px;">
+
+    <h1 th:text="${screenTitle}">New Book</h1>
+
+    <!-- Activity 4: Error block — only renders if "yearError" exists in the Model -->
+    <div th:if="${yearError}"
+         style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+        <strong th:text="${yearError}">Generic error message</strong>
+    </div>
+
+    <form th:action="@{/admin/books/save}" th:object="${book}" method="post">
+
+        <div class="form-group">
+            <label for="title">Book Title:</label>
+            <input type="text" th:field="*{title}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="author">Author:</label>
+            <input type="text" th:field="*{author}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="isbn">ISBN:</label>
+            <input type="text" th:field="*{isbn}" required />
+        </div>
+
+        <div class="form-group">
+            <label for="yearPublication">Publication Year:</label>
+            <input type="number" th:field="*{yearPublication}" required />
+        </div>
+
+        <button type="submit">Save Book</button>
+        <a th:href="@{/admin/books}" class="btn-cancel">Cancel</a>
+
+    </form>
+
+</div>
+
+<!-- Activity 2: Inject footer -->
+<div th:replace="~{layout/components :: footer}"></div>
+
+</body>
+</html>
