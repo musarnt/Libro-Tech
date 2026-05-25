@@ -48,9 +48,12 @@ public class BookService {
     }
 
     public boolean deleteById(Long id) {
-        if (!bookRepository.existsById(id)) return false;
-        bookRepository.deleteById(id);
-        return true;
+        return bookRepository.findById(id).map(book -> {
+            book.setActive(false);
+            book.setDeletedAt(java.time.LocalDateTime.now());
+            bookRepository.save(book);
+            return true;
+        }).orElse(false);
     }
 
     // new method - pagination support

@@ -11,9 +11,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@org.hibernate.annotations.SQLRestriction("deleted = false")
-@Table(name = "categories")
-public class Category {
+@Table(name = "genres")
+public class Genre {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
