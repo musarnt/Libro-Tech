@@ -2,13 +2,12 @@ package com.riwi.librotech.controller.ui;
 
 import com.riwi.librotech.model.Book;
 import com.riwi.librotech.service.BookService;
+import com.riwi.librotech.service.CategoryService;
+import com.riwi.librotech.service.GenreService;
+import com.riwi.librotech.service.PublisherService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
+import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,45 +16,56 @@ import java.util.List;
 public class BookUIController {
 
     private final BookService bookService;
+    private final CategoryService categoryService;
+    private final PublisherService publisherService;
+    private final GenreService genreService;
 
-    public BookUIController(BookService bookService) {
+    public BookUIController(BookService bookService, CategoryService categoryService,
+                            PublisherService publisherService, GenreService genreService) {
         this.bookService = bookService;
+        this.categoryService = categoryService;
+        this.publisherService = publisherService;
+        this.genreService = genreService;
     }
 
-    // GET /admin/books — show book list
+    private void populateFormModel(Model model) {
+        model.addAttribute("categories", categoryService.findAll());
+        model.addAttribute("publishers", publisherService.findAll());
+        model.addAttribute("genres", genreService.findAll());
+    }
+
     @GetMapping
     public String listBooksUI(Model model) {
-        List<Book> books = bookService.findAll();
-        model.addAttribute("books", books);
+        model.addAttribute("books", bookService.findAll());
         model.addAttribute("screenTitle", "Book Catalog - Dashboard");
         return "books/list";
     }
 
-    // GET /admin/books/new — show empty form
     @GetMapping("/new")
     public String showCreationForm(Model model) {
         model.addAttribute("book", new Book());
         model.addAttribute("screenTitle", "Register New Book");
+        populateFormModel(model);
         return "books/form";
     }
 
-    // POST /admin/books/save — Activity 3 (Lab-7): validate year before saving
     @PostMapping("/save")
-    public String saveBook(@ModelAttribute("book") Book book, Model model) {
-
+    public String saveBook(@ModelAttribute("book") Book book,
+                           @RequestParam(value = "genreIds", required = false) List<Long> genreIds,
+                           Model model) {
         int currentYear = LocalDate.now().getYear();
-
-        // Manual business validation
         if (book.getYearPublication() > currentYear) {
             model.addAttribute("yearError",
                     "Publication year cannot be greater than the current year (" + currentYear + ").");
             model.addAttribute("screenTitle", "Register New Book (Correction)");
-
-            // Return the form view (NO redirect) to keep the typed data
+            populateFormModel(model);
             return "books/form";
         }
-
-        // Passes validation — save and redirect (PRG pattern)
+        if (genreIds != null) {
+            book.setGenres(genreService.findAll().stream()
+                    .filter(g -> genreIds.contains(g.getId()))
+                    .collect(java.util.stream.Collectors.toList()));
+        }
         bookService.save(book);
         return "redirect:/admin/books";
     }
