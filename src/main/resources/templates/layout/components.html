@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<!-- This file is not rendered on its own, it only stores fragments -->
 <body>
 
 <!-- Fragment: Navbar -->
 <header th:fragment="navbar" style="background-color: #333; color: white; padding: 15px;">
-    <h2 style="margin: 0; display: inline-block;">📚 LibroTech Admin</h2>
+    <h2 style="margin: 0; display: inline-block;"> LibroTech - Admin</h2>
     <nav style="display: inline-block; margin-left: 20px;">
-        <a th:href="@{/admin/books}" style="color: white; margin-right: 15px;">Catalog</a>
-        <a th:href="@{/api/books}" target="_blank" style="color: #aaa;">View JSON API</a>
+        <a th:href="@{/admin/books}" style="color: white; margin-right: 15px;">Books</a>
+        <a th:href="@{/admin/categories}" style="color: white; margin-right: 15px;">Categories</a>
+        <a th:href="@{/admin/genres}" style="color: white; margin-right: 15px;">Genres</a>
+        <a th:href="@{/admin/publishers}" style="color: white; margin-right: 15px;">Publishers</a>
+        <a th:href="@{/swagger-ui/index.html}" target="_blank" style="color: #aaa;">Swagger API</a>
     </nav>
 </header>
 

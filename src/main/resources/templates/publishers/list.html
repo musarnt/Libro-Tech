@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${screenTitle}">Book Catalog</title>
+    <title th:text="${screenTitle}">Publisher Catalog</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -16,37 +16,37 @@
 <body>
 <div th:replace="~{layout/components :: navbar}"></div>
 <div style="margin: 20px;">
-    <h1 th:text="${screenTitle}">Book List</h1>
+    <h1 th:text="${screenTitle}">Publisher List</h1>
     <div style="margin-bottom: 20px;">
-        <a th:href="@{/admin/books/new}"
+        <a th:href="@{/admin/publishers/new}"
            style="padding: 10px; background-color: #008CBA; color: white; text-decoration: none;">
-            + Add New Book
+            + Add New Publisher
         </a>
     </div>
-    <div th:if="${#lists.isEmpty(books)}" class="empty-state">
-        <p>No books registered in the system yet.</p>
+    <div th:if="${#lists.isEmpty(publishers)}" class="empty-state">
+        <p>No publishers registered yet.</p>
     </div>
-    <table th:unless="${#lists.isEmpty(books)}">
+    <table th:unless="${#lists.isEmpty(publishers)}">
         <thead>
         <tr>
             <th>ID</th>
-            <th>Title</th>
-            <th>Author</th>
-            <th>ISBN</th>
-            <th>Year</th>
+            <th>Name</th>
+            <th>Country</th>
+            <th>Address</th>
+            <th>Founded In</th>
             <th>Actions</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="book : ${books}">
-            <td th:text="${book.id}"></td>
-            <td th:text="${book.title}"></td>
-            <td th:text="${book.author}"></td>
-            <td th:text="${book.isbn}"></td>
-            <td th:text="${book.yearPublication}"></td>
+        <tr th:each="publisher : ${publishers}">
+            <td th:text="${publisher.id}"></td>
+            <td th:text="${publisher.name}"></td>
+            <td th:text="${publisher.country}"></td>
+            <td th:text="${publisher.address}"></td>
+            <td th:text="${publisher.foundedIn}"></td>
             <td>
-                <a th:href="@{/admin/books/{id}/edit(id=${book.id})}" class="btn-edit">Edit</a>
-                <form th:action="@{/admin/books/delete/{id}(id=${book.id})}" method="post"
+                <a th:href="@{/admin/publishers/{id}/edit(id=${publisher.id})}" class="btn-edit">Edit</a>
+                <form th:action="@{/admin/publishers/delete/{id}(id=${publisher.id})}" method="post"
                       style="display:inline" onsubmit="return confirm('Are you sure?')">
                     <button type="submit" class="btn-delete">Delete</button>
                 </form>

@@ -1,15 +1,15 @@
 package com.riwi.librotech.controller;
 
-import com.riwi.librotech.model.Category;
+import com.riwi.librotech.dto.category.CategoryRequestDTO;
+import com.riwi.librotech.dto.category.CategoryResponseDTO;
+import com.riwi.librotech.mapper.CategoryMapper;
 import com.riwi.librotech.service.CategoryService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.data.domain.Sort;
-
-import java.util.List;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
@@ -17,60 +17,41 @@ import java.util.Map;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final CategoryMapper categoryMapper;
 
-    public CategoryController(CategoryService categoryService) {
+    public CategoryController(CategoryService categoryService, CategoryMapper categoryMapper) {
         this.categoryService = categoryService;
+        this.categoryMapper = categoryMapper;
     }
 
     @GetMapping
-    public ResponseEntity<Page<Category>> getCategories(
+    public ResponseEntity<Page<CategoryResponseDTO>> getCategories(
             @PageableDefault(size = 10, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
-        return ResponseEntity.ok(categoryService.findAll(pageable));
+        return ResponseEntity.ok(categoryService.findAll(pageable).map(categoryMapper::toResponse));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getCategory(@PathVariable Long id) {
         return categoryService.findById(id)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(404)
-                        .body(Map.of("error", "Category not found", "id", id)));
+                .<ResponseEntity<?>>map(c -> ResponseEntity.ok(categoryMapper.toResponse(c)))
+                .orElse(ResponseEntity.status(404).body(Map.of("error", "Category not found", "id", id)));
     }
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
-        return ResponseEntity.status(201).body(categoryService.save(category));
+    public ResponseEntity<CategoryResponseDTO> createCategory(@RequestBody CategoryRequestDTO dto) {
+        return ResponseEntity.status(201).body(categoryMapper.toResponse(categoryService.save(categoryMapper.toEntity(dto))));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody Category updated) {
-        return categoryService.update(id, updated)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(404)
-                        .body(Map.of("error", "Category not found", "id", id)));
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<?> patchCategory(@PathVariable Long id, @RequestBody Map<String, Object> fields) {
-        return categoryService.findById(id).map(category -> {
-                    if (fields.containsKey("name")) category.setName((String) fields.get("name"));
-                    if (fields.containsKey("description")) category.setDescription((String) fields.get("description"));
-                    return ResponseEntity.ok(categoryService.save(category));
-                }).<ResponseEntity<?>>map(r -> r)
-                .orElse(ResponseEntity.status(404)
-                        .body(Map.of("error", "Category not found", "id", id)));
-    }
-
-    @RequestMapping(value = "/{id}", method = RequestMethod.HEAD)
-    public ResponseEntity<Void> headCategory(@PathVariable Long id) {
-        return categoryService.findById(id).isPresent()
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.notFound().build();
+    public ResponseEntity<?> updateCategory(@PathVariable Long id, @RequestBody CategoryRequestDTO dto) {
+        return categoryService.update(id, categoryMapper.toEntity(dto))
+                .<ResponseEntity<?>>map(c -> ResponseEntity.ok(categoryMapper.toResponse(c)))
+                .orElse(ResponseEntity.status(404).body(Map.of("error", "Category not found", "id", id)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
         if (categoryService.deleteById(id)) return ResponseEntity.noContent().build();
-        return ResponseEntity.status(404)
-                .body(Map.of("error", "Category not found", "id", id));
+        return ResponseEntity.status(404).body(Map.of("error", "Category not found", "id", id));
     }
 }

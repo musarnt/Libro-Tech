@@ -49,6 +49,16 @@ public class BookUIController {
         return "books/form";
     }
 
+    @GetMapping("/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        return bookService.findById(id).map(book -> {
+            model.addAttribute("book", book);
+            model.addAttribute("screenTitle", "Edit Book");
+            populateFormModel(model);
+            return "books/form";
+        }).orElse("redirect:/admin/books");
+    }
+
     @PostMapping("/save")
     public String saveBook(@ModelAttribute("book") Book book,
                            @RequestParam(value = "genreIds", required = false) List<Long> genreIds,
@@ -57,7 +67,7 @@ public class BookUIController {
         if (book.getYearPublication() > currentYear) {
             model.addAttribute("yearError",
                     "Publication year cannot be greater than the current year (" + currentYear + ").");
-            model.addAttribute("screenTitle", "Register New Book (Correction)");
+            model.addAttribute("screenTitle", book.getId() == null ? "Register New Book" : "Edit Book");
             populateFormModel(model);
             return "books/form";
         }
@@ -66,7 +76,17 @@ public class BookUIController {
                     .filter(g -> genreIds.contains(g.getId()))
                     .collect(java.util.stream.Collectors.toList()));
         }
-        bookService.save(book);
+        if (book.getId() != null) {
+            bookService.update(book.getId(), book);
+        } else {
+            bookService.save(book);
+        }
+        return "redirect:/admin/books";
+    }
+
+    @PostMapping("/delete/{id}")
+    public String deleteBook(@PathVariable Long id) {
+        bookService.deleteById(id);
         return "redirect:/admin/books";
     }
 }
