@@ -3,58 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${screenTitle}">Publisher Catalog</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .empty-state { color: #888; font-style: italic; }
-        .btn-delete { background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; }
-        .btn-edit { background-color: #ff9800; color: white; padding: 5px 10px; text-decoration: none; margin-right: 5px; }
-    </style>
+    <th:block th:replace="~{layout/components :: head}"></th:block>
 </head>
-<body>
-<div th:replace="~{layout/components :: navbar}"></div>
-<div style="margin: 20px;">
-    <h1 th:text="${screenTitle}">Publisher List</h1>
-    <div style="margin-bottom: 20px;">
+<body class="bg-gray-50 dark:bg-gray-950 min-h-screen">
+<div th:replace="~{layout/components :: sidebar}"></div>
+<div th:replace="~{layout/components :: topbar}"></div>
+
+<main class="main-content p-8">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white" th:text="${screenTitle}">Publishers</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage book publishers</p>
+        </div>
         <a th:href="@{/admin/publishers/new}"
-           style="padding: 10px; background-color: #008CBA; color: white; text-decoration: none;">
-            + Add New Publisher
+           class="inline-flex items-center gap-2 px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg transition">
+            <span>+</span> Add New Publisher
         </a>
     </div>
-    <div th:if="${#lists.isEmpty(publishers)}" class="empty-state">
-        <p>No publishers registered yet.</p>
+
+    <div th:if="${#lists.isEmpty(publishers)}"
+         class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-12 text-center">
+        <p class="text-gray-500 dark:text-gray-400 italic">No publishers registered yet.</p>
     </div>
-    <table th:unless="${#lists.isEmpty(publishers)}">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Country</th>
-            <th>Address</th>
-            <th>Founded In</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="publisher : ${publishers}">
-            <td th:text="${publisher.id}"></td>
-            <td th:text="${publisher.name}"></td>
-            <td th:text="${publisher.country}"></td>
-            <td th:text="${publisher.address}"></td>
-            <td th:text="${publisher.foundedIn}"></td>
-            <td>
-                <a th:href="@{/admin/publishers/{id}/edit(id=${publisher.id})}" class="btn-edit">Edit</a>
-                <form th:action="@{/admin/publishers/delete/{id}(id=${publisher.id})}" method="post"
-                      style="display:inline" onsubmit="return confirm('Are you sure?')">
-                    <button type="submit" class="btn-delete">Delete</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
+
+    <div th:unless="${#lists.isEmpty(publishers)}"
+         class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-800 text-left text-xs uppercase text-gray-500 dark:text-gray-400">
+            <tr>
+                <th class="px-6 py-3 font-medium">ID</th>
+                <th class="px-6 py-3 font-medium">Name</th>
+                <th class="px-6 py-3 font-medium">Country</th>
+                <th class="px-6 py-3 font-medium">Address</th>
+                <th class="px-6 py-3 font-medium">Founded In</th>
+                <th class="px-6 py-3 font-medium text-right">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+            <tr th:each="publisher : ${publishers}" class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
+                <td class="px-6 py-3 text-gray-500 dark:text-gray-400" th:text="${publisher.id}"></td>
+                <td class="px-6 py-3 font-medium text-gray-900 dark:text-white" th:text="${publisher.name}"></td>
+                <td class="px-6 py-3 text-gray-700 dark:text-gray-300" th:text="${publisher.country}"></td>
+                <td class="px-6 py-3 text-gray-500 dark:text-gray-400" th:text="${publisher.address}"></td>
+                <td class="px-6 py-3 text-gray-700 dark:text-gray-300" th:text="${publisher.foundedIn}"></td>
+                <td class="px-6 py-3 text-right">
+                    <a th:href="@{/admin/publishers/{id}/edit(id=${publisher.id})}"
+                       class="inline-block px-3 py-1 text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-md transition mr-2">Edit</a>
+                    <form th:action="@{/admin/publishers/delete/{id}(id=${publisher.id})}" method="post"
+                          class="inline" onsubmit="return confirm('Are you sure?')">
+                        <button type="submit"
+                                class="px-3 py-1 text-xs font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-md transition">
+                            Delete
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
 <div th:replace="~{layout/components :: footer}"></div>
 </body>
 </html>

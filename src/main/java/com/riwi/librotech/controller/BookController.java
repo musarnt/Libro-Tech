@@ -46,7 +46,7 @@ public class BookController {
     @GetMapping
     public ResponseEntity<Page<BookResponseDTO>> getBooks(
             @PageableDefault(size = 10, sort = "title", direction = Sort.Direction.ASC) Pageable pageable) {
-        return ResponseEntity.ok(bookService.findAll(pageable).map(bookMapper::toResponse));
+        return ResponseEntity.ok(bookService.findAllPaged(pageable).map(bookMapper::toResponse));
     }
 
     @GetMapping("/{id}")

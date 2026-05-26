@@ -2,6 +2,7 @@ package com.riwi.librotech.service;
 
 import com.riwi.librotech.model.Book;
 import com.riwi.librotech.repository.BookRepository;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,8 +57,13 @@ public class BookService {
         }).orElse(false);
     }
 
-    // new method - pagination support
-    public Page<Book> findAll(Pageable pageable) {
-        return bookRepository.findAll(pageable);
+    // Método para el REST API (retorna Page con COUNT)
+    public Page<Book> findAllPaged(Pageable pageable) {
+        return bookRepository.findAll(pageable); // Page<Book> nativo de JPA
+    }
+
+    // Método para el UI controller (retorna Slice sin COUNT)
+    public Slice<Book> findAll(Pageable pageable) {
+        return bookRepository.findAllBy(pageable);
     }
 }

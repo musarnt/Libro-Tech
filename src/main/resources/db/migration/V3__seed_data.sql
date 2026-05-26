@@ -1,93 +1,43 @@
+-- 1. Limpieza total en el orden correcto para evitar bloqueos
+TRUNCATE TABLE book_genre CASCADE;
+TRUNCATE TABLE books CASCADE;
+TRUNCATE TABLE genres CASCADE;
+TRUNCATE TABLE categories CASCADE;
+TRUNCATE TABLE publishers CASCADE;
 
-INSERT INTO publishers (name, address, country, founded_in) VALUES
-('Penguin Random House', '1745 Broadway, New York',    'USA',   1927),
-('HarperCollins',        '195 Broadway, New York',     'USA',   1989),
-('Editorial Planeta',    'Diagonal 662, Barcelona',    'Spain', 1949),
-('Oxford University',    'Great Clarendon St, Oxford', 'UK',    1586),
-('MIT Press',            '55 Hayward St, Cambridge',   'USA',   1962);
+-- 2. Insertamos la categoría base obligatoria (ID 1)
+INSERT INTO categories (id, name) VALUES 
+(1, 'General');
 
-INSERT INTO categories (name, description) VALUES
-('Fiction',    'Novels and short stories'),
-('Science',    'Scientific and academic books'),
-('History',    'Historical events and biographies'),
-('Technology', 'Programming and software'),
-('Philosophy', 'Philosophical works');
+-- 3. Insertamos las editoriales incluyendo la columna 'address' requerida
+INSERT INTO publishers (id, name, address, country) VALUES
+(1, 'Editorial Alpha', 'Calle 10 #45-12', 'Colombia'),
+(2, 'Penguin Random House', 'Avenida Diagonal 640', 'España');
 
-INSERT INTO genres (name, description) VALUES
-('Novel',           'Long narrative prose'),
-('Dystopia',        'Oppressive future societies'),
-('Essay',           'Reflection and analysis'),
-('Adventure',       'Action and travel stories'),
-('Horror',          'Fear and suspense'),
-('Science Fiction', 'Scientific speculation');
+-- 4. Insertamos los géneros base que necesitas
+INSERT INTO genres (id, name, description) VALUES
+(1, 'Novel',           'Long narrative prose'),
+(2, 'Dystopia',        'Oppressive future societies'),
+(3, 'Essay',           'Reflection and analysis'),
+(4, 'Adventure',       'Action and travel stories'),
+(5, 'Horror',          'Fear and suspense'),
+(6, 'Science Fiction', 'Scientific speculation');
 
-INSERT INTO books (title, author, isbn, year_publication, category_id, publisher_id) VALUES
-('One Hundred Years of Solitude', 'Gabriel Garcia Marquez', '978-0-06-088328-7', 1967, 1, 2),
-('Don Quixote',                   'Miguel de Cervantes',    '978-84-376-0494-7', 1605, 1, 3),
-('1984',                          'George Orwell',          '978-0-451-52493-5', 1949, 1, 1),
-('Sapiens',                       'Yuval Noah Harari',      '978-0-06-231609-7', 2011, 3, 2),
-('Clean Code',                    'Robert C. Martin',       '978-0-13-235088-4', 2008, 4, 1),
-('The Pragmatic Programmer',      'David Thomas',           '978-0-13-595705-9', 1999, 4, 1),
-('Cosmos',                        'Carl Sagan',             '978-0-345-53943-4', 1980, 2, 1),
-('The Aleph',                     'Jorge Luis Borges',      '978-84-206-3539-3', 1949, 1, 3),
-('A Brief History of Time',       'Stephen Hawking',        '978-0-553-38016-3', 1988, 2, 1),
-('The Art of War',                'Sun Tzu',                '978-1-59030-227-7', 1910, 3, 4),
-('Brave New World',               'Aldous Huxley',          '978-0-06-085052-4', 1932, 1, 2),
-('Fahrenheit 451',                'Ray Bradbury',           '978-1-45-163222-7', 1953, 1, 1),
-('The Great Gatsby',              'F. Scott Fitzgerald',    '978-0-7432-7356-5', 1925, 1, 1),
-('To Kill a Mockingbird',         'Harper Lee',             '978-0-06-112008-4', 1960, 1, 2),
-('The Catcher in the Rye',        'J.D. Salinger',          '978-0-316-76948-0', 1951, 1, 1),
-('The Hobbit',                    'J.R.R. Tolkien',         '978-0-547-92822-7', 1937, 1, 2),
-('Crime and Punishment',          'Fyodor Dostoevsky',      '978-0-14-044913-6', 1866, 1, 1),
-('Pride and Prejudice',           'Jane Austen',            '978-0-14-143951-8', 1813, 1, 1),
-('The Republic',                  'Plato',                  '978-0-14-044914-3', 1901, 5, 4),
-('Meditations',                   'Marcus Aurelius',        '978-0-14-044921-1', 1900, 5, 4),
-('The Origin of Species',         'Charles Darwin',         '978-0-14-043205-3', 1859, 2, 4),
-('A Short History of Everything', 'Bill Bryson',            '978-0-7679-0818-4', 2003, 2, 1),
-('The Selfish Gene',              'Richard Dawkins',        '978-0-19-857519-1', 1976, 2, 4),
-('The Grand Design',              'Stephen Hawking',        '978-0-553-80537-6', 2010, 2, 1),
-('Dune',                          'Frank Herbert',          '978-0-441-17271-9', 1965, 1, 1),
-('Foundation',                    'Isaac Asimov',           '978-0-553-29335-7', 1951, 1, 1),
-('Neuromancer',                   'William Gibson',         '978-0-441-56956-4', 1984, 1, 1),
-('The Hitchhiker''s Guide',       'Douglas Adams',          '978-0-345-39180-3', 1979, 1, 1),
-('The Martian',                   'Andy Weir',              '978-0-553-41802-6', 2011, 1, 1),
-('Ender''s Game',                 'Orson Scott Card',       '978-0-812-55070-0', 1985, 1, 1),
-('The Name of the Wind',          'Patrick Rothfuss',       '978-0-756-40407-7', 2007, 1, 1),
-('Thinking Fast and Slow',        'Daniel Kahneman',        '978-0-374-27563-1', 2011, 5, 2),
-('The Power of Habit',            'Charles Duhigg',         '978-0-679-60385-6', 2012, 5, 1),
-('Atomic Habits',                 'James Clear',            '978-0-735-21129-2', 2018, 5, 1),
-('Deep Work',                     'Cal Newport',            '978-1-455-58669-1', 2016, 4, 2),
-('The Lean Startup',              'Eric Ries',              '978-0-307-88789-4', 2011, 4, 1),
-('Design Patterns',               'Gang of Four',           '978-0-201-63361-0', 1994, 4, 5),
-('The Mythical Man-Month',        'Frederick Brooks',       '978-0-201-83595-3', 1975, 4, 5),
-('Introduction to Algorithms',    'Thomas Cormen',          '978-0-262-03384-8', 2009, 4, 5),
-('Structure and Interpretation',  'Harold Abelson',         '978-0-262-51087-5', 1996, 4, 5),
-('Code Complete',                 'Steve McConnell',        '978-0-735-61967-8', 2004, 4, 1),
-('Refactoring',                   'Martin Fowler',          '978-0-201-48567-7', 1999, 4, 1),
-('The Art of Computer Programming','Donald Knuth',          '978-0-201-89683-1', 1968, 4, 5),
-('Godel Escher Bach',             'Douglas Hofstadter',    '978-0-465-02656-2', 1979, 5, 5),
-('The Prince',                    'Niccolo Machiavelli',    '978-0-14-044915-0', 1532, 3, 4),
-('Guns Germs and Steel',          'Jared Diamond',          '978-0-393-31755-8', 1997, 3, 1),
-('A Brief History of Humankind',  'Yuval Noah Harari',      '978-84-9992-376-7', 2014, 3, 3),
-('The Diary of a Young Girl',     'Anne Frank',             '978-0-553-57712-5', 1947, 3, 1),
-('The Communist Manifesto',       'Karl Marx',              '978-0-14-044757-6', 1848, 3, 4),
-('On the Origin of Species',      'Charles Darwin',         '978-0-14-043206-0', 1860, 2, 4);
+-- 5. Generamos automáticamente los 300 libros
+INSERT INTO books (id, title, author, isbn, year_publication, category_id, publisher_id)
+SELECT
+    i AS id,
+    'Libro Técnico Vol. ' || i AS title,
+    'Autor Detalle ' || ((i % 15) + 1) AS author,
+    '978-0-14-' || lpad(i::text, 6, '0') || '-3' AS isbn,
+    (1980 + (i % 45)) AS year_publication,
+    1 AS category_id,
+    2 AS publisher_id
+FROM generate_series(1, 300) AS i;
 
-INSERT INTO book_genre (book_id, genre_id) VALUES
-(1,  1), (1,  4),
-(2,  1), (2,  4),
-(3,  1), (3,  2),
-(4,  3),
-(5,  3),
-(6,  3),
-(7,  3),
-(8,  1),
-(9,  3),
-(10, 3),
-(11, 1), (11, 2),
-(12, 1), (12, 2),
-(25, 1), (25, 6),
-(26, 1), (26, 6),
-(27, 1), (27, 6),
-(29, 1), (29, 6),
-(30, 1), (30, 6);
+-- 6. Vinculamos los 300 libros con sus géneros correspondientes
+INSERT INTO book_genre (book_id, genre_id)
+SELECT 
+    i AS book_id,
+    ((i % 6) + 1) AS genre_id
+FROM generate_series(1, 300) AS i;

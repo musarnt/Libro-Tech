@@ -3,75 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${screenTitle}">Book Form</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select { padding: 8px; width: 300px; }
-        button { padding: 10px 15px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-        .btn-cancel { background-color: #f44336; text-decoration: none; display: inline-block; padding: 10px 15px; color: white; }
-    </style>
+    <th:block th:replace="~{layout/components :: head}"></th:block>
 </head>
-<body>
-<div th:replace="~{layout/components :: navbar}"></div>
-<div style="margin: 20px;">
-    <h1 th:text="${screenTitle}">New Book</h1>
+<body class="bg-gray-50 dark:bg-gray-950 min-h-screen">
+<div th:replace="~{layout/components :: sidebar}"></div>
+<div th:replace="~{layout/components :: topbar}"></div>
 
-    <div th:if="${yearError}"
-         style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-        <strong th:text="${yearError}">Generic error message</strong>
-    </div>
+<main class="main-content p-8">
+    <div class="max-w-2xl">
+        <h1 class="text-2xl font-semibold text-gray-900 dark:text-white mb-2" th:text="${screenTitle}">New Book</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Fill in the details below</p>
 
-    <form th:action="@{/admin/books/save}" th:object="${book}" method="post">
-        <div class="form-group">
-            <label>Book Title:</label>
-            <input type="text" th:field="*{title}" required />
+        <div th:if="${yearError}"
+             class="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <p class="text-sm font-medium text-red-700 dark:text-red-400" th:text="${yearError}"></p>
         </div>
-        <div class="form-group">
-            <label>Author:</label>
-            <input type="text" th:field="*{author}" required />
-        </div>
-        <div class="form-group">
-            <label>ISBN:</label>
-            <input type="text" th:field="*{isbn}" required />
-        </div>
-        <div class="form-group">
-            <label>Publication Year:</label>
-            <input type="number" th:field="*{yearPublication}" required />
-        </div>
-        <div class="form-group">
-            <label>Category:</label>
-            <select th:field="*{category.id}">
-                <option value="">-- Select Category --</option>
-                <option th:each="cat : ${categories}"
-                        th:value="${cat.id}"
-                        th:text="${cat.name}"/>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Publisher:</label>
-            <select th:field="*{publisher.id}">
-                <option value="">-- Select Publisher --</option>
-                <option th:each="pub : ${publishers}"
-                        th:value="${pub.id}"
-                        th:text="${pub.name}"/>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Genres:</label>
-            <div th:each="genre : ${genres}">
-                <input type="checkbox"
-                       th:value="${genre.id}"
-                       name="genreIds"
-                       th:checked="${book.genres != null and book.genres.contains(genre)}"/>
-                <label th:text="${genre.name}"/>
+
+        <form th:action="@{/admin/books/save}" th:object="${book}" method="post"
+              class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 space-y-5">
+
+            <input type="hidden" th:field="*{id}" />
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Book Title</label>
+                <input type="text" th:field="*{title}" required
+                       class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"/>
             </div>
-        </div>
 
-        <button type="submit">Save Book</button>
-        <a th:href="@{/admin/books}" class="btn-cancel">Cancel</a>
-    </form>
-</div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Author</label>
+                <input type="text" th:field="*{author}" required
+                       class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"/>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ISBN</label>
+                <input type="text" th:field="*{isbn}" required
+                       class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"/>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Publication Year</label>
+                <input type="number" th:field="*{yearPublication}" required
+                       class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"/>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                <select th:field="*{category.id}"
+                        class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500">
+                    <option value="">-- Select Category --</option>
+                    <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"/>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Publisher</label>
+                <select th:field="*{publisher.id}"
+                        class="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500">
+                    <option value="">-- Select Publisher --</option>
+                    <option th:each="pub : ${publishers}" th:value="${pub.id}" th:text="${pub.name}"/>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Genres</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <label th:each="genre : ${genres}"
+                           class="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg cursor-pointer hover:bg-accent-50 dark:hover:bg-gray-700 transition">
+                        <input type="checkbox" th:value="${genre.id}" name="genreIds"
+                               th:checked="${book.genres != null and book.genres.contains(genre)}"
+                               class="rounded text-accent-600 focus:ring-accent-500"/>
+                        <span class="text-sm text-gray-700 dark:text-gray-300" th:text="${genre.name}"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
+                <button type="submit"
+                        class="px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white text-sm font-medium rounded-lg transition">
+                    Save Book
+                </button>
+                <a th:href="@{/admin/books}"
+                   class="px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</main>
+
 <div th:replace="~{layout/components :: footer}"></div>
 </body>
 </html>

@@ -5,6 +5,7 @@ import com.riwi.librotech.service.BookService;
 import com.riwi.librotech.service.CategoryService;
 import com.riwi.librotech.service.GenreService;
 import com.riwi.librotech.service.PublisherService;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -35,9 +36,18 @@ public class BookUIController {
     }
 
     @GetMapping
-    public String listBooksUI(Model model) {
-        model.addAttribute("books", bookService.findAll());
-        model.addAttribute("screenTitle", "Book Catalog - Dashboard");
+    public String listBooksUI(
+            @RequestParam(defaultValue = "0") int page,
+            Model model) {
+
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.ASC, "title"));
+        Slice<Book> booksSlice = bookService.findAll(pageable);
+
+        model.addAttribute("books", booksSlice.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("hasNext", booksSlice.hasNext());
+        model.addAttribute("hasPrevious", booksSlice.hasPrevious());
+
         return "books/list";
     }
 
