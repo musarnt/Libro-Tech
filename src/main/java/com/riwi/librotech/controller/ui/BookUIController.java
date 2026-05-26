@@ -1,5 +1,6 @@
 package com.riwi.librotech.controller.ui;
 
+import com.riwi.librotech.dto.book.BookSummaryDTO;
 import com.riwi.librotech.model.Book;
 import com.riwi.librotech.service.BookService;
 import com.riwi.librotech.service.CategoryService;
@@ -11,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
+import com.riwi.librotech.dto.book.BookSummaryDTO;
 
 @Controller
 @RequestMapping("/admin/books")
@@ -40,8 +42,7 @@ public class BookUIController {
             @RequestParam(defaultValue = "0") int page,
             Model model) {
 
-        Pageable pageable = PageRequest.of(page, 10, Sort.by(Sort.Direction.ASC, "title"));
-        Slice<Book> booksSlice = bookService.findAll(pageable);
+        Slice<BookSummaryDTO> booksSlice = bookService.getCatalogSlice(page, 10);
 
         model.addAttribute("books", booksSlice.getContent());
         model.addAttribute("currentPage", page);
