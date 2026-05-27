@@ -25,7 +25,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     Slice<Book> findAllBy(Pageable pageable);
 
-    // ACTIVIDAD 2 — Proyección JPQL con constructor de Record
     // Una sola query con JOIN, sin N+1, retorna Slice (sin COUNT)
     @Query("""
         SELECT new com.riwi.librotech.dto.book.BookSummaryDTO(
@@ -43,7 +42,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         """)
     Slice<BookSummaryDTO> findAllBookSummariesSlice(Pageable pageable);
 
-    // RETO 1 — Misma proyección pero retornando Page (con COUNT)
     // Para comparar en logs: Page genera 2 queries, Slice genera 1
     @Query("""
         SELECT new com.riwi.librotech.dto.book.BookSummaryDTO(
@@ -71,10 +69,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b ORDER BY b.yearPublication DESC")
     List<Book> findAllWithRelations();
 
-
     // RETO 3 — JOIN FETCH como alternativa a @EntityGraph
     // Mismo resultado, diferente mecanismo
-
     @Query("""
         SELECT DISTINCT b FROM Book b
         JOIN FETCH b.publisher

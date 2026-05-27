@@ -128,4 +128,8 @@ public class BookService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public List<Book> findAllWithRelations() {
+        return bookRepository.findAllWithRelations();
+    }
 }
