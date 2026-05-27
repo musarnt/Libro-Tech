@@ -38,7 +38,6 @@ public class Book {
     private Boolean active = true;
 
     // ── Relaciones ───────────────────────────────────────────
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -56,7 +55,6 @@ public class Book {
     private List<Genre> genres = new ArrayList<>();
 
     // ── Soft Delete ──────────────────────────────────────────
-
     @Column(nullable = false)
     private Boolean deleted = false;
 

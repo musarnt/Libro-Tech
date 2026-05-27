@@ -10,9 +10,6 @@ import com.riwi.librotech.repository.GenreRepository;
 import com.riwi.librotech.repository.PublisherRepository;
 import com.riwi.librotech.service.BookService;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -43,10 +40,22 @@ public class BookController {
         this.genreRepository = genreRepository;
     }
 
+    // GET /api/books?page=0&size=10
     @GetMapping
-    public ResponseEntity<Page<BookResponseDTO>> getBooks(
-            @PageableDefault(size = 10, sort = "title", direction = Sort.Direction.ASC) Pageable pageable) {
-        return ResponseEntity.ok(bookService.findAllPaged(pageable).map(bookMapper::toResponse));
+    public ResponseEntity<Map<String, Object>> getBooks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Slice<BookSummaryDTO> slice = bookService.getCatalogSlice(page, size);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("books", slice.getContent());
+        response.put("currentPage", slice.getNumber());
+        response.put("pageSize", slice.getSize());
+        response.put("hasNext", slice.hasNext());
+        response.put("hasPrevious", slice.hasPrevious());
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -102,24 +111,6 @@ public class BookController {
     public ResponseEntity<?> deleteBook(@PathVariable Long id) {
         if (bookService.deleteById(id)) return ResponseEntity.noContent().build();
         return ResponseEntity.status(404).body(Map.of("error", "Book not found", "id", id));
-    }
-
-    // GET /api/books/catalog?page=0&size=10
-    @GetMapping("/catalog")
-    public ResponseEntity<Map<String, Object>> getCatalog(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        Slice<BookSummaryDTO> slice = bookService.getCatalogSlice(page, size);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("books", slice.getContent());
-        response.put("currentPage", slice.getNumber());
-        response.put("pageSize", slice.getSize());
-        response.put("hasNext", slice.hasNext());
-        response.put("hasPrevious", slice.hasPrevious());
-
-        return ResponseEntity.ok(response);
     }
 
     // Reto 1 — Mismo catálogo con Page (2 queries, para comparar)
