@@ -9,6 +9,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface BookMapper {
@@ -20,7 +21,7 @@ public interface BookMapper {
     BookResponseDTO toResponseDTO(Book book);
 
     @Named("mapGenreNames")
-    default List<String> mapGenreNames(List<Genre> genres) {
+    default List<String> mapGenreNames(Set<Genre> genres){
         if (genres == null) return List.of();
         return genres.stream()
                 .map(Genre::getName)

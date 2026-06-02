@@ -16,11 +16,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class BookService {
@@ -43,11 +44,15 @@ public class BookService {
         this.genreRepository = genreRepository;
     }
 
-    // === DTO OPERATIONS (new) ===
+    // === DTO-BASED CRUD ===
+
+    // Returns a single book as ResponseDTO
     public Optional<BookResponseDTO> getBookById(Long id) {
         return bookRepository.findById(id).map(bookMapper::toResponseDTO);
     }
 
+    // Creates a book from RequestDTO, resolves relations by ID
+    @Transactional
     public BookResponseDTO createBook(BookRequestDTO dto) {
         Book book = bookMapper.toEntity(dto);
 
@@ -62,6 +67,8 @@ public class BookService {
         return bookMapper.toResponseDTO(bookRepository.save(book));
     }
 
+    // Updates an existing book, returns empty if not found
+    @Transactional
     public Optional<BookResponseDTO> updateBook(Long id, BookRequestDTO dto) {
         return bookRepository.findById(id).map(book -> {
             book.setTitle(dto.title());
@@ -73,26 +80,7 @@ public class BookService {
         });
     }
 
-    private void resolveRelations(Book book, BookRequestDTO dto) {
-        if (dto.categoryId() != null)
-            categoryRepository.findById(dto.categoryId()).ifPresent(book::setCategory);
-        if (dto.publisherId() != null)
-            publisherRepository.findById(dto.publisherId()).ifPresent(book::setPublisher);
-        if (dto.genreIds() != null) {
-            book.setGenres(genreRepository.findAllById(dto.genreIds()));
-        }
-    }
-
-    // === EXISTING METHODS ===
-
-    public List<Book> findAll() {
-        return bookRepository.findAll();
-    }
-
-    public Optional<Book> findById(Long id) {
-        return bookRepository.findById(id);
-    }
-
+    // Soft delete: sets active=false instead of removing
     public boolean deleteById(Long id) {
         return bookRepository.findById(id).map(book -> {
             book.setActive(false);
@@ -100,6 +88,45 @@ public class BookService {
             bookRepository.save(book);
             return true;
         }).orElse(false);
+    }
+
+    // === CATALOG QUERIES ===
+
+    // Lightweight DTO slice for REST API (1 query, no COUNT)
+    public Slice<BookSummaryDTO> getCatalogSlice(int page, int size) {
+        int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        return bookRepository.findAllBookSummariesSlice(PageRequest.of(page, safeSize));
+    }
+
+    // Same catalog with Page (2 queries, includes total count)
+    public Page<BookSummaryDTO> getCatalogPage(int page) {
+        return bookRepository.findAllBookSummariesPage(PageRequest.of(page, 10));
+    }
+
+    // === DETAIL QUERIES ===
+
+    // Full detail with genres for a single book
+    public BookDetailDTO getBookDetail(Long id) {
+        Book book = getBookWithRelations(id);
+        return toDetailDTO(book);
+    }
+
+    // Full detail for all books (JOIN FETCH, no N+1)
+    public List<BookDetailDTO> getAllBooksDetailJoinFetch() {
+        return bookRepository.findAllWithRelationsJPQL().stream()
+                .map(this::toDetailDTO)
+                .toList();
+    }
+
+    // === ENTITY ACCESS (used by UI layer and internal queries) ===
+
+    // Returns raw entity — used by BookUIController for edit form
+    public Optional<Book> findById(Long id) {
+        return bookRepository.findById(id);
+    }
+
+    public List<Book> findAll() {
+        return bookRepository.findAll();
     }
 
     public Page<Book> findAllPaged(Pageable pageable) {
@@ -110,46 +137,42 @@ public class BookService {
         return bookRepository.findAllBy(pageable);
     }
 
-    public Slice<BookSummaryDTO> getCatalogSlice(int page, int size) {
-        int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
-        return bookRepository.findAllBookSummariesSlice(PageRequest.of(page, safeSize));
+    public List<Book> findAllWithRelations() {
+        return bookRepository.findAllWithRelations();
     }
 
-    public Page<BookSummaryDTO> getCatalogPage(int page) {
-        return bookRepository.findAllBookSummariesPage(PageRequest.of(page, 10));
+    // === PRIVATE HELPERS ===
+
+    // Resolves category, publisher, and genres from their IDs
+    private void resolveRelations(Book book, BookRequestDTO dto) {
+        if (dto.categoryId() != null) {
+            book.setCategory(categoryRepository.findById(dto.categoryId())
+                    .orElseThrow(() -> new RuntimeException("Category not found: " + dto.categoryId())));
+        }
+        if (dto.publisherId() != null) {
+            book.setPublisher(publisherRepository.findById(dto.publisherId())
+                    .orElseThrow(() -> new RuntimeException("Publisher not found: " + dto.publisherId())));
+        }
+        if (dto.genreIds() != null) {
+            book.setGenres(new HashSet<>(genreRepository.findAllById(dto.genreIds())));
+        }
     }
 
-    public Book getBookWithRelations(Long id) {
+    // Loads a book with all relations via @EntityGraph
+    private Book getBookWithRelations(Long id) {
         return bookRepository.findWithRelationsById(id)
                 .orElseThrow(() -> new RuntimeException("Book not found: " + id));
     }
 
-    public BookDetailDTO getBookDetail(Long id) {
-        Book book = getBookWithRelations(id);
+    // Converts entity to BookDetailDTO (manual, genres need post-processing)
+    private BookDetailDTO toDetailDTO(Book book) {
         return new BookDetailDTO(
                 book.getId(), book.getTitle(), book.getAuthor(),
                 book.getIsbn(), book.getYearPublication(),
                 book.getCategory() != null ? book.getCategory().getName() : null,
                 book.getPublisher() != null ? book.getPublisher().getName() : null,
                 book.getPublisher() != null ? book.getPublisher().getCountry() : null,
-                book.getGenres().stream().map(Genre::getName).collect(Collectors.toList())
+                book.getGenres().stream().map(Genre::getName).toList()
         );
-    }
-
-    public List<BookDetailDTO> getAllBooksDetailJoinFetch() {
-        return bookRepository.findAllWithRelationsJPQL().stream()
-                .map(book -> new BookDetailDTO(
-                        book.getId(), book.getTitle(), book.getAuthor(),
-                        book.getIsbn(), book.getYearPublication(),
-                        book.getCategory() != null ? book.getCategory().getName() : null,
-                        book.getPublisher() != null ? book.getPublisher().getName() : null,
-                        book.getPublisher() != null ? book.getPublisher().getCountry() : null,
-                        book.getGenres().stream().map(Genre::getName).collect(Collectors.toList())
-                ))
-                .collect(Collectors.toList());
-    }
-
-    public List<Book> findAllWithRelations() {
-        return bookRepository.findAllWithRelations();
     }
 }

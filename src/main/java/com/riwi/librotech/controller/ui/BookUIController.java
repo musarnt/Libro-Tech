@@ -1,18 +1,19 @@
 package com.riwi.librotech.controller.ui;
 
+import com.riwi.librotech.dto.book.BookFormDTO;
+import com.riwi.librotech.dto.book.BookRequestDTO;
 import com.riwi.librotech.dto.book.BookSummaryDTO;
-import com.riwi.librotech.model.Book;
 import com.riwi.librotech.service.BookService;
 import com.riwi.librotech.service.CategoryService;
 import com.riwi.librotech.service.GenreService;
 import com.riwi.librotech.service.PublisherService;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDate;
 import java.util.List;
-import com.riwi.librotech.dto.book.BookSummaryDTO;
 
 @Controller
 @RequestMapping("/admin/books")
@@ -38,23 +39,18 @@ public class BookUIController {
     }
 
     @GetMapping
-    public String listBooksUI(
-            @RequestParam(defaultValue = "0") int page,
-            Model model) {
-
+    public String listBooksUI(@RequestParam(defaultValue = "0") int page, Model model) {
         Slice<BookSummaryDTO> booksSlice = bookService.getCatalogSlice(page, 10);
-
         model.addAttribute("books", booksSlice.getContent());
         model.addAttribute("currentPage", page);
         model.addAttribute("hasNext", booksSlice.hasNext());
         model.addAttribute("hasPrevious", booksSlice.hasPrevious());
-
         return "books/list";
     }
 
     @GetMapping("/new")
     public String showCreationForm(Model model) {
-        model.addAttribute("book", new Book());
+        model.addAttribute("book", new BookFormDTO());
         model.addAttribute("screenTitle", "Register New Book");
         populateFormModel(model);
         return "books/form";
@@ -63,7 +59,19 @@ public class BookUIController {
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model) {
         return bookService.findById(id).map(book -> {
-            model.addAttribute("book", book);
+            BookFormDTO form = new BookFormDTO(
+                    book.getId(),
+                    book.getTitle(),
+                    book.getAuthor(),
+                    book.getIsbn(),
+                    book.getYearPublication(),
+                    book.getCategory() != null ? book.getCategory().getId() : null,
+                    book.getPublisher() != null ? book.getPublisher().getId() : null,
+                    book.getGenres() != null
+                            ? book.getGenres().stream().map(g -> g.getId()).toList()
+                            : List.of()
+            );
+            model.addAttribute("book", form);
             model.addAttribute("screenTitle", "Edit Book");
             populateFormModel(model);
             return "books/form";
@@ -71,26 +79,30 @@ public class BookUIController {
     }
 
     @PostMapping("/save")
-    public String saveBook(@ModelAttribute("book") Book book,
-                           @RequestParam(value = "genreIds", required = false) List<Long> genreIds,
-                           Model model) {
+    public String saveBook(@ModelAttribute("book") BookFormDTO form, Model model) {
         int currentYear = LocalDate.now().getYear();
-        if (book.getYearPublication() > currentYear) {
+        if (form.getYearPublication() != null && form.getYearPublication() > currentYear) {
             model.addAttribute("yearError",
                     "Publication year cannot be greater than the current year (" + currentYear + ").");
-            model.addAttribute("screenTitle", book.getId() == null ? "Register New Book" : "Edit Book");
+            model.addAttribute("screenTitle", form.getId() == null ? "Register New Book" : "Edit Book");
             populateFormModel(model);
             return "books/form";
         }
-        if (genreIds != null) {
-            book.setGenres(genreService.findAll().stream()
-                    .filter(g -> genreIds.contains(g.getId()))
-                    .collect(java.util.stream.Collectors.toList()));
-        }
-        if (book.getId() != null) {
-            bookService.update(book.getId(), book);
+
+        BookRequestDTO dto = new BookRequestDTO(
+                form.getTitle(),
+                form.getAuthor(),
+                form.getIsbn(),
+                form.getYearPublication(),
+                form.getCategoryId(),
+                form.getPublisherId(),
+                form.getGenreIds()
+        );
+
+        if (form.getId() != null) {
+            bookService.updateBook(form.getId(), dto);
         } else {
-            bookService.save(book);
+            bookService.createBook(dto);
         }
         return "redirect:/admin/books";
     }
