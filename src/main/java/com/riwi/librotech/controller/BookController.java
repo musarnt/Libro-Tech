@@ -6,6 +6,7 @@ import com.riwi.librotech.dto.book.BookResponseDTO;
 import com.riwi.librotech.dto.book.BookSummaryDTO;
 import com.riwi.librotech.mapper.BookMapper;
 import com.riwi.librotech.service.BookService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +53,7 @@ public class BookController {
 
     // POST /api/books
     @PostMapping
-    public ResponseEntity<BookResponseDTO> createBook(@RequestBody BookRequestDTO dto) {
+    public ResponseEntity<BookResponseDTO> createBook(@Valid  @RequestBody BookRequestDTO dto) {
         return ResponseEntity.status(201).body(bookService.createBook(dto));
     }
 
